@@ -501,6 +501,336 @@
         AI-Driven School の図解ツールで作成
       </p>
     </div>
+
+    <!-- ===== 開発ストーリー ===== -->
+    <div class="fade-in mt-4">
+
+      <!-- セクションタイトル -->
+      <div class="text-center mb-8 pt-4">
+        <div class="inline-flex items-center gap-2 bg-slate-200 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-600 mb-3">
+          🛠️ 開発の裏側
+        </div>
+        <h2 class="text-2xl font-black text-slate-900">どうやって作ったか<br/>― 苦労の記録 ―</h2>
+        <p class="text-slate-500 text-sm mt-2">このツールが完成するまでに起きた問題と解決の軌跡</p>
+      </div>
+
+      <!-- 全体タイムライン -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-4">
+        <h3 class="font-bold text-slate-800 mb-5 flex items-center gap-2"><span>📅</span> 作成の全体像</h3>
+        <div class="space-y-0">
+
+          <!-- フェーズ1 -->
+          <div class="flex gap-4">
+            <div class="flex flex-col items-center">
+              <div class="w-9 h-9 rounded-full bg-blue-100 border-2 border-blue-400 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">1</div>
+              <div class="w-0.5 h-full bg-slate-200 mt-1"></div>
+            </div>
+            <div class="pb-6 flex-1">
+              <p class="font-bold text-slate-800 text-sm">設計・RSS収集の実装</p>
+              <p class="text-xs text-slate-500 mb-2">比較的スムーズ</p>
+              <p class="text-sm text-slate-600">
+                GitHub Actionsでの自動実行の仕組みを設計。17メディアのRSSフィードを選定し、
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">fetch-feeds.js</code> でカテゴリ別に記事を収集する仕組みを構築。
+                3時間おきのcronスケジュールも設定完了。
+              </p>
+            </div>
+          </div>
+
+          <!-- フェーズ2（ここが山場） -->
+          <div class="flex gap-4">
+            <div class="flex flex-col items-center">
+              <div class="w-9 h-9 rounded-full bg-red-100 border-2 border-red-400 flex items-center justify-center text-red-600 font-bold text-sm flex-shrink-0">2</div>
+              <div class="w-0.5 h-full bg-slate-200 mt-1"></div>
+            </div>
+            <div class="pb-6 flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <p class="font-bold text-slate-800 text-sm">AIコンポーネントの実装</p>
+                <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">最大の難関</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">約2日間にわたる試行錯誤</p>
+              <p class="text-sm text-slate-600">
+                Gemini AIをどのサービスで呼び出すか、という選択で大きく躓く。
+                詳細は下の「最大の壁」セクションで解説。
+              </p>
+            </div>
+          </div>
+
+          <!-- フェーズ3 -->
+          <div class="flex gap-4">
+            <div class="flex flex-col items-center">
+              <div class="w-9 h-9 rounded-full bg-yellow-100 border-2 border-yellow-400 flex items-center justify-center text-yellow-600 font-bold text-sm flex-shrink-0">3</div>
+              <div class="w-0.5 h-full bg-slate-200 mt-1"></div>
+            </div>
+            <div class="pb-6 flex-1">
+              <p class="font-bold text-slate-800 text-sm">GitHub Actionsの安定化</p>
+              <p class="text-xs text-slate-500 mb-2">予期しない問題が続出</p>
+              <p class="text-sm text-slate-600">
+                ワークフローが途中でフリーズする現象、GitHub Actionsの無料枠切れ、
+                LINEトークンの期限切れなど、細かい問題が重なった。
+              </p>
+            </div>
+          </div>
+
+          <!-- フェーズ4 -->
+          <div class="flex gap-4">
+            <div class="flex flex-col items-center">
+              <div class="w-9 h-9 rounded-full bg-green-100 border-2 border-green-400 flex items-center justify-center text-green-600 font-bold text-sm flex-shrink-0">4</div>
+            </div>
+            <div class="pb-2 flex-1">
+              <p class="font-bold text-slate-800 text-sm">品質改善・運用開始</p>
+              <p class="text-xs text-slate-500 mb-2">エンドツーエンドで動作確認</p>
+              <p class="text-sm text-slate-600">
+                LINEへの初回送信成功後、記事が1件しか届かない・リンク切れ・メッセージ途中切れなど
+                品質問題を順次修正。現在は3〜5件の記事が安定して届く状態に。
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 最大の壁：Google Cloud問題 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden mb-4">
+        <div class="bg-gradient-to-r from-red-500 to-rose-500 p-5 text-white">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🧱</span>
+            <div>
+              <p class="text-red-100 text-xs font-semibold uppercase tracking-wider">最大の壁</p>
+              <h3 class="text-xl font-bold">Google Cloudで何度もうまくいかなかった</h3>
+            </div>
+          </div>
+          <p class="text-red-100 text-sm mt-2">約2日間・10回以上の試行錯誤</p>
+        </div>
+
+        <div class="p-6 space-y-5">
+
+          <!-- 背景 -->
+          <div>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              当初の計画は「<strong>Googleの無料枠でGemini AIを使う</strong>」というものでした。
+              しかし、GoogleのAIサービスには複数の入口があり、それぞれ課金体系が異なるという
+              複雑さがこの問題の根本にありました。
+            </p>
+          </div>
+
+          <!-- 2つのサービスの違い -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p class="font-bold text-blue-800 text-sm mb-1">Google AI Studio</p>
+              <p class="text-xs text-blue-700 mb-2">APIキーで簡単に使える手軽なサービス</p>
+              <ul class="text-xs text-blue-600 space-y-1">
+                <li>✓ 設定が簡単</li>
+                <li>✓ すぐ試せる</li>
+                <li class="text-red-600 font-semibold">✗ 無料枠を超えると「プリペイド残高」が必要</li>
+                <li class="text-red-600">✗ Google Cloud残高とは別管理</li>
+              </ul>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p class="font-bold text-slate-800 text-sm mb-1">Vertex AI（Google Cloud）</p>
+              <p class="text-xs text-slate-600 mb-2">本格的な企業向けのAIプラットフォーム</p>
+              <ul class="text-xs text-slate-600 space-y-1">
+                <li>✓ 約¥47,000の無料トライアルあり</li>
+                <li class="text-red-600 font-semibold">✗ モデル名の指定が複雑</li>
+                <li class="text-red-600">✗ サービスアカウント認証が難しい</li>
+                <li class="text-red-600">✗ プロジェクト設定が煩雑</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- エラーの連鎖 -->
+          <div>
+            <p class="font-bold text-slate-700 text-sm mb-3">実際に起きたエラーの連鎖</p>
+            <div class="space-y-2">
+
+              <div class="flex gap-3 bg-red-50 border border-red-100 rounded-xl p-3">
+                <span class="text-red-400 text-lg flex-shrink-0">❌</span>
+                <div>
+                  <p class="font-semibold text-red-800 text-xs">Gemini API 429: プリペイド残高不足</p>
+                  <p class="text-xs text-red-600 mt-0.5">AI Studioの無料枠が尽きていた。Google Cloudの残高とは別管理だと気づいていなかった。</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 bg-red-50 border border-red-100 rounded-xl p-3">
+                <span class="text-red-400 text-lg flex-shrink-0">❌</span>
+                <div>
+                  <p class="font-semibold text-red-800 text-xs">Vertex AI 404: モデルが見つからない</p>
+                  <p class="text-xs text-red-600 mt-0.5">
+                    Vertex AIに切り替えたが、<code class="bg-red-100 px-1 rounded font-mono">gemini-2.0-flash</code>、
+                    <code class="bg-red-100 px-1 rounded font-mono">gemini-1.5-flash-001</code>、
+                    <code class="bg-red-100 px-1 rounded font-mono">gemini-3.1-flash-lite-preview</code>
+                    など様々なモデル名を試しても「見つからない」エラーが続いた。
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 bg-red-50 border border-red-100 rounded-xl p-3">
+                <span class="text-red-400 text-lg flex-shrink-0">❌</span>
+                <div>
+                  <p class="font-semibold text-red-800 text-xs">サービスアカウント認証エラー</p>
+                  <p class="text-xs text-red-600 mt-0.5">
+                    Vertex AI用にGoogle Cloudサービスアカウントを作成し、JSONキーを発行。
+                    <code class="bg-red-100 px-1 rounded font-mono">google-auth-library</code>で認証を試みたが、
+                    GitHub Actions上でハングアップし処理が永久に止まった。
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 bg-red-50 border border-red-100 rounded-xl p-3">
+                <span class="text-red-400 text-lg flex-shrink-0">❌</span>
+                <div>
+                  <p class="font-semibold text-red-800 text-xs">新しいGCPプロジェクトを作っても404</p>
+                  <p class="text-xs text-red-600 mt-0.5">
+                    AI Studioが自動生成したプロジェクトではVertex AIモデルにアクセスできないと判断し、
+                    新規GCPプロジェクト（<code class="bg-red-100 px-1 rounded font-mono">ai-digest-494615</code>）を手動作成。
+                    Vertex AI APIを有効化、サービスアカウント設定を再実施したが、それでも404が続いた。
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 解決策 -->
+          <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+            <p class="font-bold text-green-800 text-sm mb-2 flex items-center gap-2">
+              <span>✅</span> 最終的な解決策
+            </p>
+            <p class="text-sm text-green-700 leading-relaxed mb-3">
+              Vertex AIを諦め、<strong>Google AI Studio（シンプルなAPIキー方式）に戻す</strong>という判断をしました。
+              その上で、AI Studio用に¥2,000のプリペイドをチャージ。
+              また、呼び出すモデルを廃止された<code class="bg-green-100 px-1 rounded font-mono text-xs">gemini-2.0-flash</code>から
+              最新の<code class="bg-green-100 px-1 rounded font-mono text-xs">gemini-2.5-flash</code>に更新しました。
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Vertex AI → AI Studio に変更</span>
+              <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">¥2,000 プリペイドチャージ</span>
+              <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">gemini-2.5-flash に更新</span>
+            </div>
+          </div>
+
+          <!-- 教訓 -->
+          <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4">
+            <p class="font-semibold text-amber-800 text-sm mb-1">💡 この経験からの教訓</p>
+            <p class="text-xs text-amber-700 leading-relaxed">
+              「Google Cloud」と「Google AI Studio」は同じGoogleでも<strong>別の課金システム</strong>を持つ別サービスです。
+              Vertex AIは本格的な企業向けで、個人の小規模ツールには設定コストが高すぎました。
+              目的に合ったサービスを最初に見極めることが重要です。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- その他の苦労 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-4">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><span>🔧</span> その他に起きた問題と解決</h3>
+
+        <div class="space-y-3">
+
+          <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
+            <span class="text-2xl flex-shrink-0">⏳</span>
+            <div>
+              <p class="font-bold text-slate-800 text-sm">GitHub Actionsがフリーズし続けた（1時間以上）</p>
+              <p class="text-xs text-slate-600 mt-1 mb-2">
+                RSSフィードの取得後、処理が永遠に止まったままになる現象。ログを見ても何も出力されない。
+              </p>
+              <div class="bg-white border border-slate-200 rounded-lg p-3">
+                <p class="text-xs text-green-700 font-semibold mb-1">解決策</p>
+                <p class="text-xs text-slate-600">
+                  原因は <code class="bg-slate-100 px-1 rounded font-mono">fetch-feeds.js</code> の末尾に
+                  <code class="bg-slate-100 px-1 rounded font-mono">process.exit(0)</code> がなかったこと。
+                  RSSパーサーがHTTPコネクションを開いたままにするため、子プロセスが終了しなかった。
+                  1行追加することで解決。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
+            <span class="text-2xl flex-shrink-0">💳</span>
+            <div>
+              <p class="font-bold text-slate-800 text-sm">GitHub Actionsの無料枠が切れていた</p>
+              <p class="text-xs text-slate-600 mt-1 mb-2">
+                ワークフローが「支払い情報を更新してください」というエラーで起動しなくなった。
+                プライベートリポジトリは月2000分の制限あり。
+              </p>
+              <div class="bg-white border border-slate-200 rounded-lg p-3">
+                <p class="text-xs text-green-700 font-semibold mb-1">解決策</p>
+                <p class="text-xs text-slate-600">
+                  リポジトリを<strong>パブリック（公開）</strong>に変更。パブリックリポジトリはGitHub Actionsが完全無料・無制限。
+                  シークレット（APIキー等）はリポジトリ設定に安全に保管されるため、公開しても問題なし。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
+            <span class="text-2xl flex-shrink-0">📰</span>
+            <div>
+              <p class="font-bold text-slate-800 text-sm">RSSフィードのURL変更・取得エラー</p>
+              <p class="text-xs text-slate-600 mt-1 mb-2">
+                AnthropicとRedditのRSSフィードが毎回404/403エラーを返していた。
+              </p>
+              <div class="bg-white border border-slate-200 rounded-lg p-3">
+                <p class="text-xs text-green-700 font-semibold mb-1">解決策</p>
+                <p class="text-xs text-slate-600">
+                  エラーの出るソースを削除し、安定して配信されているAI News、NVIDIA Blog、Microsoft AI Blogなどに差し替え。
+                  現在は17メディアで安定稼働中。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4 p-4 bg-slate-50 rounded-xl">
+            <span class="text-2xl flex-shrink-0">💬</span>
+            <div>
+              <p class="font-bold text-slate-800 text-sm">LINEに届いた記事が1件だけ・メッセージが途中で切れた</p>
+              <p class="text-xs text-slate-600 mt-1 mb-2">
+                初回成功後、AIが最も重要な1件しか選ばず、また別の回ではLINEの5000字制限を超えてメッセージが切れた。
+              </p>
+              <div class="bg-white border border-slate-200 rounded-lg p-3">
+                <p class="text-xs text-green-700 font-semibold mb-1">解決策</p>
+                <p class="text-xs text-slate-600">
+                  Geminiへのプロンプトを「<strong>必ず3件以上選ぶ</strong>」「要約は1文・最大50字」「全体1500字以内」と明確に指定。
+                  メッセージ送信スクリプトには5000字超の自動分割機能を実装済みだったが、
+                  そもそものAI出力を短くする方向で根本解決した。
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 完成までのコスト -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><span>📊</span> 最終的にかかったコスト・時間</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div class="text-center bg-slate-50 rounded-xl p-4">
+            <div class="text-2xl font-black text-slate-800">¥2,000</div>
+            <div class="text-xs text-slate-500 mt-1">Gemini API<br/>プリペイド</div>
+          </div>
+          <div class="text-center bg-slate-50 rounded-xl p-4">
+            <div class="text-2xl font-black text-green-600">¥0</div>
+            <div class="text-xs text-slate-500 mt-1">GitHub Actions<br/>（パブリック）</div>
+          </div>
+          <div class="text-center bg-slate-50 rounded-xl p-4">
+            <div class="text-2xl font-black text-green-600">¥0</div>
+            <div class="text-xs text-slate-500 mt-1">LINE API<br/>（月1000通以内）</div>
+          </div>
+          <div class="text-center bg-slate-50 rounded-xl p-4">
+            <div class="text-2xl font-black text-blue-600">2日</div>
+            <div class="text-xs text-slate-500 mt-1">開発・<br/>デバッグ期間</div>
+          </div>
+        </div>
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
+          <span class="font-semibold">振り返り：</span>
+          「無料でGoogleのAIを使う」という当初の目標は、Google CloudとAI Studioの違いを理解できていなかったことで大きく遠回りしました。
+          しかし、その試行錯誤の中でGitHub Actions・API認証・Node.js・LINEメッセージングAPIなど
+          多くの技術要素を実際に手を動かして理解できたことは大きな収穫です。
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <script>
