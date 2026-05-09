@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APIの仕組み｜図解で完全理解</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50:  '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    .gradient-hero { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1d4ed8 100%); }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+    .flow-arrow { position: relative; }
+    .flow-arrow::after {
+      content: '▶';
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .animate-blink { animation: pulse-dot 1.5s ease-in-out infinite; }
+    .code-block { background: #0f172a; border-radius: 12px; font-family: 'Courier New', monospace; }
+    .tag-get    { background:#dcfce7; color:#15803d; }
+    .tag-post   { background:#dbeafe; color:#1d4ed8; }
+    .tag-put    { background:#fef9c3; color:#a16207; }
+    .tag-delete { background:#fee2e2; color:#b91c1c; }
+    .status-2xx { background:#dcfce7; color:#15803d; }
+    .status-4xx { background:#fef9c3; color:#a16207; }
+    .status-5xx { background:#fee2e2; color:#b91c1c; }
+    .section-num { 
+      width:48px; height:48px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-radius: 12px;
+      display:flex; align-items:center; justify-content:center;
+      color:white; font-weight:800; font-size:18px;
+      flex-shrink:0;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 leading-relaxed">
+
+  <!-- ===== HERO ===== -->
+  <section class="gradient-hero text-white py-20 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+        <span>⚡</span><span>テクノロジー入門</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl font-black mb-4 leading-tight">
+        APIの仕組み
+      </h1>
+      <p class="text-xl md:text-2xl text-blue-200 font-light mb-8">
+        「APIって何？」を、一度でスッキリ理解する
+      </p>
+
+      <!-- キャッチコピー -->
+      <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 max-w-xl mx-auto">
+        <p class="text-base text-blue-100 mb-3">ひとことで言うと ──</p>
+        <p class="text-2xl font-bold text-white mb-1">API ＝ ソフトウェア同士をつなぐ</p>
+        <p class="text-2xl font-bold text-yellow-300">「注文窓口」</p>
+        <p class="text-sm text-blue-200 mt-3">中身を知らなくても、決まった形で頼めば結果が届く</p>
+      </div>
+
+      <!-- あなたも毎日使っている -->
+      <div class="mt-10 flex flex-wrap justify-center gap-3">
+        <span class="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">☁️ 天気予報</span>
+        <span class="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">🔑 Googleログイン</span>
+        <span class="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">💳 オンライン決済</span>
+        <span class="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">🗺️ 地図・ナビ</span>
+        <span class="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm">🤖 AIチャット</span>
+      </div>
+      <p class="mt-4 text-blue-300 text-sm">あなたも毎日使っています</p>
+
+      <div class="mt-12 text-blue-300 text-sm">↓ ひとつずつ丁寧に解説します</div>
+    </div>
+  </section>
+
+  <div class="max-w-3xl mx-auto px-4 py-8 space-y-16">
+
+    <!-- ===== SECTION 1: そもそもAPIって何？ ===== -->
+    <section>
+      <div class="flex items-center gap-4 mb-8">
+        <div class="section-num">1</div>
+        <div>
+          <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">WHAT IS API</p>
+          <h2 class="text-2xl font-bold text-slate-900">そもそもAPIって何？</h2>
+        </div>
+      </div>
+
+      <p class="text-slate-600 mb-8">
+        API（エーピーアイ）は <span class="font-semibold text-slate-800">Application Programming Interface</span> の略称です。長い名前ですが、本質はシンプルです。<br />
+        まずは<strong>レストラン</strong>を想像してください。
+      </p>
+
+      <!-- レストランの図解 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-6">
+        <h3 class="text-center text-sm font-semibold text-slate-500 uppercase tracking-wider mb-8">レストランで考えるAPIの役割</h3>
+
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <!-- あなた -->
+          <div class="flex flex-col items-center text-center w-full md:w-40 card-hover bg-blue-50 rounded-2xl p-5">
+            <div class="text-4xl mb-2">👤</div>
+            <div class="font-bold text-slate-800 text-sm">あなた（アプリ）</div>
+            <div class="text-xs text-slate-500 mt-1">お客さん</div>
+            <div class="mt-3 bg-blue-100 text-blue-700 text-xs rounded-lg px-3 py-1.5 font-medium">「パスタください」</div>
+          </div>
+
+          <!-- 矢印 -->
+          <div class="flex flex-col items-center text-slate-400 text-xs gap-1">
+            <div class="text-blue-500 text-lg">→</div>
+            <div class="text-slate-400 text-xs">注文（リクエスト）</div>
+          </div>
+
+          <!-- API（ウェイター） -->
+          <div class="flex flex-col items-center text-center w-full md:w-44 card-hover bg-indigo-50 rounded-2xl p-5 border-2 border-indigo-200">
+            <div class="text-4xl mb-2">🧑‍🍳</div>
+            <div class="font-bold text-indigo-800 text-sm">API（ウェイター）</div>
+            <div class="text-xs text-indigo-500 mt-1">仲介役</div>
+            <div class="mt-3 bg-indigo-100 text-indigo-700 text-xs rounded-lg px-3 py-1.5 font-medium">注文を伝え、料理を届ける</div>
+          </div>
+
+          <!-- 矢印 -->
+          <div class="flex flex-col items-center text-slate-400 text-xs gap-1">
+            <div class="text-blue-500 text-lg">→</div>
+            <div class="text-slate-400 text-xs">依頼</div>
+          </div>
+
+          <!-- サーバー -->
+          <div class="flex flex-col items-center text-center w-full md:w-40 card-hover bg-slate-50 rounded-2xl p-5">
+            <div class="text-4xl mb-2">🍳</div>
+            <div class="font-bold text-slate-800 text-sm">サーバー（厨房）</div>
+            <div class="text-xs text-slate-500 mt-1">実際の処理</div>
+            <div class="mt-3 bg-slate-100 text-slate-600 text-xs rounded-lg px-3 py-1.5 font-medium">パスタを作って渡す</div>
+          </div>
+        </div>
+
+        <div class="mt-6 text-center">
+          <div class="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 text-sm text-green-700">
+            <span>✅</span>
+            <span>料理（レスポンス）があなたのテーブルに届く</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ポイント -->
+      <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-5">
+        <div class="flex items-start gap-3">
+          <span class="text-blue-500 text-lg">💡</span>
+          <div>
+            <p class="font-semibold text-blue-900 mb-1">ここがポイント</p>
+            <p class="text-blue-800 text-sm leading-relaxed">
+              APIは「仲介役」です。相手の内部構造を知らなくても、<strong>決まったルール（インターフェース）</strong>で話しかければ結果が返ってきます。
+              この「決まったルール」のことをインターフェース（Interface）と呼び、それがAPI（Application Programming Interface）という名前の由来です。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 2: リクエスト〜レスポンス ===== -->
+    <section>
+      <div class="flex items-center gap-4 mb-8">
+        <div class="section-num">2</div>
+        <div>
+          <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">REQUEST & RESPONSE</p>
+          <h2 class="text-2xl font-bold text-slate-900">APIの仕組み — リクエストとレスポンス</h2>
+        </div>
+      </div>
+
+      <p class="text-slate-600 mb-8">
+        APIのやり取りは、<strong>「聞く（リクエスト）」と「答える（レスポンス）」の2つだけ</strong>です。このシンプルな往復が、あらゆるAPIの基本です。
+      </p>
+
+      <!-- 4ステップ -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 text-center card-hover">
+          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg mx-auto mb-3">1</div>
+          <div class="text-2xl mb-2">📤</div>
+          <div class="font-semibold text-slate-800 text-sm mb-1">リクエスト送信</div>
+          <div class="text-xs text-slate-500">アプリが「こういう情報ください」とAPIに送る</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 text-center card-hover">
+          <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-lg mx-auto mb-3">2</div>
+          <div class="text-2xl mb-2">🚪</div>
+          <div class="font-semibold text-slate-800 text-sm mb-1">APIが受け取る</div>
+          <div class="text-xs text-slate-500">内容を確認・認証する（門番の役割）</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 text-center card-hover">
+          <div class="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center text-violet-600 font-bold text-lg mx-auto mb-3">3</div>
+          <div class="text-2xl mb-2">⚙️</div>
+          <div class="font-semibold text-slate-800 text-sm mb-1">サーバーが処理</div>
+          <div class="text-xs text-slate-500">データ検索・計算など実際の処理を実行</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 text-center card-hover">
+          <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-lg mx-auto mb-3">4</div>
+          <div class="text-2xl mb-2">📥</div>
+          <div class="font-semibold text-slate-800 text-sm mb-1">レスポンス返却</div>
+          <div class="text-xs text-slate-500">処理結果がアプリに返ってくる</div>
+        </div>
+      </div>
+
+      <!-- コードブロック例 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="bg-slate-100 px-5 py-3 flex items-center gap-2 border-b border-slate-200">
+          <div class="flex gap-1.5">
+            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+            <div class="w-3 h-3 rounded-full bg-green-400"></div>
+          </div>
+          <span class="text-xs text-slate-500 ml-2 font-mono">ターミナル — APIにリクエストを送ってみる</span>
+        </div>
+        <div class="code-block p-5 text-sm overflow-x-auto">
+          <pre class="text-green-400 leading-7"><span class="text-slate-500">$</span> curl "https://api.weather.example.com/current?city=tokyo"
+
+<span class="text-slate-500"># 返ってくるレスポンス（JSON形式）</span>
+<span class="text-yellow-300">{</span>
+  <span class="text-blue-300">"city"</span>:        <span class="text-green-300">"東京"</span>,
+  <span class="text-blue-300">"temperature"</span>: <span class="text-green-300">"22°C"</span>,
+  <span class="text-blue-300">"condition"</span>:   <span class="text-green-300">"晴れ"</span>,
+  <span class="text-blue-300">"humidity"</span>:    <span class="text-green-300">"65%"</span>
+<span class="text-yellow-300">}</span></pre>
+        </div>
+      </div>
+
+      <!-- JSON → アプリ画面 -->
+      <div class="mt-4 flex flex-col md:flex-row items-center gap-4">
+        <div class="text-center text-xs text-slate-500 bg-white border border-slate-200 rounded-xl p-4 w-full md:w-1/2">
+          <div class="font-mono text-slate-600 text-xs mb-2">APIレスポンス（データ）</div>
+          <div class="text-left font-mono text-xs text-slate-500 leading-6">
+            "temperature": "22°C"<br/>
+            "condition": "晴れ"<br/>
+            "humidity": "65%"
+          </div>
+        </div>
+        <div class="text-3xl text-slate-300 hidden md:block">→</div>
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-5 w-full md:w-1/2 text-center">
+          <div class="text-xs opacity-70 mb-2">weather-app.example.com</div>
+          <div class="text-3xl font-black">22°C</div>
+          <div class="text-lg mt-1">☀️ 晴れ</div>
+          <div class="flex justify-center gap-4 mt-2 text-xs opacity-80">
+            <span>💧 65%</span>
+            <span>💨 3m/s</span>
+          </div>
+          <div class="mt-3 text-xs opacity-60">APIの結果 → アプリの画面</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3: HTTPメソッド ===== -->
+    <section>
+      <div class="flex items-center gap-4 mb-8">
+        <div class="section-num">3</div>
+        <div>
+          <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">HTTP METHODS</p>
+          <h2 class="text-2xl font-bold text-slate-900">「何をするか」を伝えるHTTPメソッド</h2>
+        </div>
+      </div>
+
+      <p class="text-slate-600 mb-8">
+        APIへのリクエストには目的があります。「取る」「作る」「更新する」「消す」── これを伝える<strong>動詞</strong>がHTTPメソッドです。
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <!-- GET -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 card-hover">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="tag-get font-bold text-sm px-3 py-1 rounded-lg font-mono">GET</span>
+            <span class="font-semibold text-slate-800">データを取得する</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">情報を「見る」だけ。天気確認、商品一覧の表示など。データは変更しない。</p>
+          <div class="bg-green-50 rounded-lg p-3 font-mono text-xs text-green-700">
+            GET /weather?city=tokyo
+          </div>
+        </div>
+
+        <!-- POST -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 card-hover">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="tag-post font-bold text-sm px-3 py-1 rounded-lg font-mono">POST</span>
+            <span class="font-semibold text-slate-800">新しく作成する</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">情報を「送って新規登録する」。ユーザー登録、注文送信、投稿など新しいデータを作るとき。</p>
+          <div class="bg-blue-50 rounded-lg p-3 font-mono text-xs text-blue-700">
+            POST /users {"name": "田中"}
+          </div>
+        </div>
+
+        <!-- PUT -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 card-hover">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="tag-put font-bold text-sm px-3 py-1 rounded-lg font-mono">PUT</span>
+            <span class="font-semibold text-slate-800">まるごと更新する</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">既存の情報を「上書き更新する」。プロフィール情報の更新など、既存データを丸ごと置き換えるとき。</p>
+          <div class="bg-yellow-50 rounded-lg p-3 font-mono text-xs text-yellow-700">
+            PUT /users/1 {"name": "鈴木"}
+          </div>
+        </div>
+
+        <!-- DELETE -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 card-hover">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="tag-delete font-bold text-sm px-3 py-1 rounded-lg font-mono">DELETE</span>
+            <span class="font-semibold text-slate-800">削除する</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">情報を「消す」。アカウント削除、投稿の取り消しなど、既存データを削除するとき。</p>
+          <div class="bg-red-50 rounded-lg p-3 font-mono text-xs text-red-700">
+            DELETE /posts/42
+          </div>
+        </div>
+      </div>
+
+      <!-- ステータスコード -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <span>📡</span> レスポンスのステータスコード
+        </h3>
+        <p class="text-sm text-slate-500 mb-4">APIは結果とともに3桁の数字を返します。これで「成功か失敗か」がわかります。</p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-4 p-3 rounded-lg bg-green-50">
+            <span class="status-2xx font-mono font-bold px-2 py-0.5 rounded text-sm w-16 text-center">200</span>
+            <span class="font-medium text-slate-700 text-sm w-24">成功</span>
+            <span class="text-slate-500 text-sm">「はい、料理をお持ちしました」</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg bg-green-50">
+            <span class="status-2xx font-mono font-bold px-2 py-0.5 rounded text-sm w-16 text-center">201</span>
+            <span class="font-medium text-slate-700 text-sm w-24">作成成功</span>
+            <span class="text-slate-500 text-sm">「ご注文を承りました（新規）」</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg bg-yellow-50">
+            <span class="status-4xx font-mono font-bold px-2 py-0.5 rounded text-sm w-16 text-center">400</span>
+            <span class="font-medium text-slate-700 text-sm w-24">リクエスト不正</span>
+            <span class="text-slate-500 text-sm">「メニューにないものは作れません」</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg bg-yellow-50">
+            <span class="status-4xx font-mono font-bold px-2 py-0.5 rounded text-sm w-16 text-center">401</span>
+            <span class="font-medium text-slate-700 text-sm w-24">認証が必要</span>
+            <span class="text-slate-500 text-sm">「会員証を見せてください」</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg bg-yellow-50">
+            <span class="status-4xx font-mono font-bold px-2 py-0.5 rounded text-sm w-16 text-center">404</span>
+            <span class="font-medium text-slate-700 text-sm w-24">見つからない</span>
+            <span class="text-slate-500 text-sm">「そのメニューは今日はありません」</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg bg-red-50">
+            <span class="status-5xx font-mono font-bold px-2 py-0.5 rounded text-sm w-16 text-center">500</span>
+            <span class="font-medium text-slate-700 text-sm w-24">サーバーエラー</span>
+            <span class="text-slate-500 text-sm">「厨房でトラブルが起きています」</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 4: 身近な例 ===== -->
+    <section>
+      <div class="flex items-center gap-4 mb-8">
+        <div class="section-num">4</div>
+        <div>
+          <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">REAL WORLD EXAMPLES</p>
+          <h2 class="text-2xl font-bold text-slate-900">身近なAPIの例 — 実はあなたも毎日使っている</h2>
+        </div>
+      </div>
+
+      <p class="text-slate-600 mb-8">
+        スマホで何気なくやっている日常の操作の裏側では、たくさんのAPIが動いています。
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- 天気予報 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover">
+          <div class="bg-gradient-to-r from-sky-400 to-blue-500 p-5 text-white">
+            <div class="flex items-center gap-3">
+              <span class="text-3xl">☁️</span>
+              <div>
+                <div class="font-bold">天気予報アプリ</div>
+                <div class="text-sky-100 text-sm">東京 22°C 晴れ</div>
+              </div>
+            </div>
+          </div>
+          <div class="p-5">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">裏側でAPIがやっていること</p>
+            <p class="text-sm text-slate-600">気象サーバーに「東京の最新天気データをください」とリクエストを送り、気温・天候・湿度・風速などをJSON形式で受け取っている</p>
+          </div>
+        </div>
+
+        <!-- Googleログイン -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover">
+          <div class="bg-gradient-to-r from-white to-slate-50 border-b border-slate-100 p-5">
+            <div class="flex flex-col items-center gap-2">
+              <button class="flex items-center gap-2 border border-slate-200 rounded-lg px-4 py-2 text-sm font-medium w-full justify-center shadow-sm">
+                <span>🔑</span> Googleでログイン
+              </button>
+              <span class="text-xs text-slate-400">または</span>
+              <div class="text-xs text-slate-400">メールアドレスで登録</div>
+            </div>
+          </div>
+          <div class="p-5">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">裏側でAPIがやっていること</p>
+            <p class="text-sm text-slate-600">GoogleのOAuth API（認可の仕組み）に「このユーザーの身元を確認してください」と問い合わせ、認証済みの証（トークン）を受け取っている</p>
+          </div>
+        </div>
+
+        <!-- オンライン決済 -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover">
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-slate-100 p-5">
+            <div class="text-center">
+              <div class="text-green-600 font-bold text-lg">✅ お支払い完了</div>
+              <div class="text-2xl font-black text-slate-800 mt-1">¥1,980</div>
+              <div class="text-xs text-slate-500 mt-1">VISA **** 4242</div>
+            </div>
+          </div>
+          <div class="p-5">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">裏側でAPIがやっていること</p>
+            <p class="text-sm text-slate-600">決済APIがクレジットカード会社のサーバーと暗号化通信を行い、与信確認 → 決済処理 → 結果通知を実行している</p>
+          </div>
+        </div>
+
+        <!-- AIチャット -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden card-hover">
+          <div class="bg-slate-900 p-4">
+            <div class="flex justify-end mb-2">
+              <div class="bg-blue-600 text-white text-xs rounded-2xl rounded-br-sm px-3 py-2 max-w-[80%]">東京の観光スポットを教えて</div>
+            </div>
+            <div class="flex justify-start">
+              <div class="bg-slate-700 text-white text-xs rounded-2xl rounded-bl-sm px-3 py-2 max-w-[80%]">東京の主な観光地は浅草、新宿、渋谷など<span class="animate-blink">▊</span></div>
+            </div>
+          </div>
+          <div class="p-5">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">裏側でAPIがやっていること</p>
+            <p class="text-sm text-slate-600">AI APIにテキストを送り、生成されたテキストをストリーミング（少しずつ）で受け取っている。ChatGPTやClaudeは全てAPIで提供されている</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 気づき -->
+      <div class="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+        <div class="flex items-start gap-3">
+          <span class="text-amber-500 text-xl">✨</span>
+          <div>
+            <p class="font-semibold text-amber-900 mb-1">気づきましたか？</p>
+            <p class="text-amber-800 text-sm leading-relaxed">
+              上の4つの例に共通しているのは、<strong>あなたがAPIの存在を意識していない</strong>ということです。優れたAPIは、ユーザーにその存在を感じさせません。まるで空気のように、裏側で静かに仕事をしているのです。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 5: APIがある世界とない世界 ===== -->
+    <section>
+      <div class="flex items-center gap-4 mb-8">
+        <div class="section-num">5</div>
+        <div>
+          <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">WITH vs WITHOUT</p>
+          <h2 class="text-2xl font-bold text-slate-900">APIがある世界とない世界</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-0 rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+        <!-- ない世界 -->
+        <div class="bg-red-50 p-6">
+          <h3 class="font-bold text-red-800 mb-4 flex items-center gap-2">
+            <span class="text-xl">❌</span> APIがない世界
+          </h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-2 text-sm text-red-700">
+              <span class="mt-0.5 text-red-400 flex-shrink-0">✗</span>
+              天気情報が欲しければ、自分で気象観測の仕組みを構築する
+            </li>
+            <li class="flex items-start gap-2 text-sm text-red-700">
+              <span class="mt-0.5 text-red-400 flex-shrink-0">✗</span>
+              決済機能が欲しければ、クレジットカード処理を自前で開発する
+            </li>
+            <li class="flex items-start gap-2 text-sm text-red-700">
+              <span class="mt-0.5 text-red-400 flex-shrink-0">✗</span>
+              地図を表示したければ、地図データを自分で作成・更新する
+            </li>
+            <li class="flex items-start gap-2 text-sm text-red-700">
+              <span class="mt-0.5 text-red-400 flex-shrink-0">✗</span>
+              ユーザー認証はパスワード管理からセキュリティ対策まで全部自前
+            </li>
+          </ul>
+          <div class="mt-4 bg-red-100 rounded-xl p-3 text-center">
+            <p class="text-red-800 text-xs font-semibold">膨大な開発コストと時間。バグのリスクも高い。</p>
+          </div>
+        </div>
+
+        <!-- ある世界 -->
+        <div class="bg-green-50 p-6 border-t md:border-t-0 md:border-l border-slate-200">
+          <h3 class="font-bold text-green-800 mb-4 flex items-center gap-2">
+            <span class="text-xl">✅</span> APIがある世界
+          </h3>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-2 text-sm text-green-700">
+              <span class="mt-0.5 text-green-500 flex-shrink-0">✓</span>
+              天気情報は天気予報APIに問い合わせるだけで取得できる
+            </li>
+            <li class="flex items-start gap-2 text-sm text-green-700">
+              <span class="mt-0.5 text-green-500 flex-shrink-0">✓</span>
+              決済はStripe APIに任せれば数行のコードで完成
+            </li>
+            <li class="flex items-start gap-2 text-sm text-green-700">
+              <span class="mt-0.5 text-green-500 flex-shrink-0">✓</span>
+              地図は地図APIで高品質な地図を即表示できる
+            </li>
+            <li class="flex items-start gap-2 text-sm text-green-700">
+              <span class="mt-0.5 text-green-500 flex-shrink-0">✓</span>
+              ログインはGoogleやAppleのAPIで安全に認証できる
+            </li>
+          </ul>
+          <div class="mt-4 bg-green-100 rounded-xl p-3 text-center">
+            <p class="text-green-800 text-xs font-semibold">「自分が本当に作るべきもの」に集中できる。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 統計 -->
+      <div class="mt-6 grid grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 text-center card-hover">
+          <div class="text-3xl font-black text-blue-600">50+</div>
+          <div class="text-xs text-slate-500 mt-1">あなたが1日にAPIを利用している回数（目安）</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 text-center card-hover">
+          <div class="text-3xl font-black text-indigo-600">数時間</div>
+          <div class="text-xs text-slate-500 mt-1">APIを使うと数ヶ月の開発が短縮される</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 text-center card-hover">
+          <div class="text-3xl font-black text-violet-600">0.2秒</div>
+          <div class="text-xs text-slate-500 mt-1">多くのAPIの平均応答時間</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 6: まとめ ===== -->
+    <section>
+      <div class="flex items-center gap-4 mb-8">
+        <div class="section-num">6</div>
+        <div>
+          <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">SUMMARY</p>
+          <h2 class="text-2xl font-bold text-slate-900">まとめ — 覚えておきたい3つのこと</h2>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex gap-5 card-hover">
+          <div class="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-xl">01</div>
+          <div>
+            <h3 class="font-bold text-slate-900 mb-2">APIは「ソフトウェアの注文窓口」</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+              レストランのウェイターのように、あなた（アプリ）とサーバーの間を取り持つ仲介役。相手の内部構造を知らなくても、決まったルール（インターフェース）で話しかければ結果が返ってきます。
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex gap-5 card-hover">
+          <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl">02</div>
+          <div>
+            <h3 class="font-bold text-slate-900 mb-2">あなたはすでにAPIユーザー</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+              天気予報、SNSログイン、地図検索、オンライン決済、AIチャット。気づかないうちに、あなたの日常はAPIに支えられています。APIは特別な人だけのものではなく、全員の生活を支える基盤技術です。
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex gap-5 card-hover">
+          <div class="flex-shrink-0 w-12 h-12 bg-violet-600 rounded-2xl flex items-center justify-center text-white font-black text-xl">03</div>
+          <div>
+            <h3 class="font-bold text-slate-900 mb-2">APIで「車輪の再発明」がなくなる</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+              すでにある優れた機能をAPIで借りることで、自分は「自分にしか作れない部分」に集中できます。開発スピードが上がり、品質も上がり、保守の手間も減る。これがAPIの最大の恩恵です。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== フッター ===== -->
+    <section class="pb-8">
+      <div class="bg-gradient-to-br from-slate-900 to-blue-900 text-white rounded-2xl p-8 text-center">
+        <div class="text-3xl mb-4">💡</div>
+        <p class="text-lg font-semibold text-white mb-2">APIは「知っている」だけで世界が広がる概念です。</p>
+        <p class="text-blue-200 text-sm leading-relaxed max-w-xl mx-auto">
+          次にアプリを使うとき、「この裏側でどんなAPIが動いているんだろう？」と想像してみてください。<br />
+          天気予報の数字も、ログインボタンも、AIの返答も、すべてAPIが繋いでいます。<br />
+          テクノロジーの見え方が、少しだけ変わるはずです。
+        </p>
+      </div>
+
+      <p class="text-center text-slate-400 text-xs mt-6">
+        AI-Driven School の図解ツールで作成
+      </p>
+    </section>
+
+  </div>
+
+</body>
+</html>
