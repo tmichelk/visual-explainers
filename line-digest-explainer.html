@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIニュース自動配信の仕組み｜LINE通知ツール図解</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'Noto Sans JP', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+
+    .gradient-hero { background: linear-gradient(135deg, #0f172a 0%, #134e4a 60%, #065f46 100%); }
+
+    /* 中央フロー矢印 */
+    .flow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #94a3b8;
+    }
+    .flow-connector .line { width: 2px; height: 32px; background: linear-gradient(180deg, #cbd5e1, #94a3b8); }
+    .flow-connector .arrow { font-size: 18px; line-height: 1; }
+
+    /* カード */
+    .part-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .part-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
+
+    /* ステップ番号バッジ */
+    .step-badge {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; color: white;
+      flex-shrink: 0;
+    }
+
+    /* LINEっぽいメッセージバブル */
+    .line-bubble {
+      background: white;
+      border-radius: 18px 18px 18px 4px;
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      max-width: 260px;
+    }
+
+    /* コードっぽいチップ */
+    .code-chip {
+      font-family: 'Courier New', monospace;
+      background: #0f172a;
+      color: #86efac;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    /* RSS フィードタグ */
+    .feed-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #f1f5f9; border: 1px solid #e2e8f0;
+      border-radius: 20px; padding: 3px 10px;
+      font-size: 11px; font-weight: 500; color: #475569;
+      white-space: nowrap;
+    }
+
+    /* タイムライン */
+    @keyframes pulse-ring { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.08)} }
+    .pulse { animation: pulse-ring 2s ease-in-out infinite; }
+
+    /* スクロール連動フェードイン */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 leading-relaxed">
+
+  <!-- ===== HERO ===== -->
+  <section class="gradient-hero text-white py-16 px-4">
+    <div class="max-w-2xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+        <span>🤖</span><span>自動化ツール 仕組み解説</span>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-black mb-4 leading-tight">
+        AIニュースを自動で<br/>LINEに届ける仕組み
+      </h1>
+      <p class="text-emerald-200 text-lg mb-8">
+        誰も操作しなくても、3時間おきにAIの最新情報が届く
+      </p>
+
+      <!-- ミニフロー概要 -->
+      <div class="flex items-center justify-center gap-2 flex-wrap">
+        <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm font-semibold">⏰ 時刻になる</div>
+        <span class="text-white/40 text-lg">→</span>
+        <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm font-semibold">📡 ニュース収集</div>
+        <span class="text-white/40 text-lg">→</span>
+        <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm font-semibold">🤖 AI選定・要約</div>
+        <span class="text-white/40 text-lg">→</span>
+        <div class="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm font-semibold">💬 LINE通知</div>
+      </div>
+
+      <!-- 報告の自動化 4パーツ -->
+      <p class="mt-8 text-white/50 text-sm">報告を自動化する 4 つのパーツ ↓</p>
+    </div>
+  </section>
+
+  <div class="max-w-2xl mx-auto px-4 py-10 space-y-4">
+
+    <!-- ===== PART 1: トリガー ===== -->
+    <div class="fade-in part-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <!-- ヘッダー -->
+      <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-5 text-white">
+        <div class="flex items-center gap-3">
+          <div class="step-badge bg-white/20 border border-white/30 text-white font-black">1</div>
+          <div>
+            <p class="text-violet-200 text-xs font-semibold uppercase tracking-wider">PART 1</p>
+            <h2 class="text-xl font-bold">トリガー</h2>
+          </div>
+          <div class="ml-auto text-4xl">⏰</div>
+        </div>
+        <p class="mt-2 text-violet-100 text-sm">「いつ動き出すか」を決める仕組み</p>
+      </div>
+
+      <!-- 内容 -->
+      <div class="p-6">
+        <div class="flex flex-col md:flex-row gap-6 items-start">
+          <!-- 説明 -->
+          <div class="flex-1">
+            <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
+              <span class="bg-violet-100 text-violet-700 text-xs font-bold px-2 py-0.5 rounded">GitHub Actions</span>
+              スケジュール実行
+            </h3>
+            <p class="text-sm text-slate-600 mb-4">
+              GitHub Actionsの<strong>cronスケジュール</strong>機能を使い、
+              誰も操作しなくても自動的に起動します。
+              手動でも「Run workflow」ボタンから即時起動が可能です。
+            </p>
+            <!-- cron設定 -->
+            <div class="bg-slate-900 rounded-xl p-4 font-mono text-xs overflow-x-auto">
+              <div class="text-slate-500 mb-1"># 3時間おきに自動実行</div>
+              <div class="text-green-400">schedule:</div>
+              <div class="text-blue-300 pl-4">- cron: <span class="text-yellow-300">'0 */3 * * *'</span></div>
+              <div class="text-slate-500 mt-2"># 手動トリガーも可能</div>
+              <div class="text-green-400">workflow_dispatch: {}</div>
+            </div>
+          </div>
+
+          <!-- タイムライン -->
+          <div class="bg-violet-50 border border-violet-100 rounded-2xl p-4 min-w-[160px]">
+            <p class="text-xs font-semibold text-violet-600 mb-3 text-center">1日の起動タイミング</p>
+            <div class="space-y-2">
+              {[['00:00', true], ['03:00', false], ['06:00', false], ['09:00', true], ['12:00', false], ['15:00', false], ['18:00', true], ['21:00', false]].map(([t, active]) => `
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full ${active ? 'bg-violet-500 pulse' : 'bg-violet-200'}"></div>
+                <span class="text-xs ${active ? 'font-bold text-violet-800' : 'text-violet-400'}">${t} JST</span>
+                ${active ? '<span class="text-xs text-violet-500 ml-1">⚡ 起動</span>' : ''}
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- タグ -->
+        <div class="mt-4 flex flex-wrap gap-2">
+          <span class="feed-tag">⚙️ 自動スケジュール</span>
+          <span class="feed-tag">👆 手動起動も可</span>
+          <span class="feed-tag">🆓 無料枠で動作（パブリックリポジトリ）</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 矢印 -->
+    <div class="flow-connector py-1">
+      <div class="line"></div>
+      <div class="arrow text-slate-300">▼</div>
+    </div>
+
+    <!-- ===== PART 2: ソース元 ===== -->
+    <div class="fade-in part-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-sky-500 to-blue-600 p-5 text-white">
+        <div class="flex items-center gap-3">
+          <div class="step-badge bg-white/20 border border-white/30 text-white font-black">2</div>
+          <div>
+            <p class="text-sky-200 text-xs font-semibold uppercase tracking-wider">PART 2</p>
+            <h2 class="text-xl font-bold">ソース元</h2>
+          </div>
+          <div class="ml-auto text-4xl">📡</div>
+        </div>
+        <p class="mt-2 text-sky-100 text-sm">「どこからニュースを集めるか」</p>
+      </div>
+
+      <div class="p-6">
+        <p class="text-sm text-slate-600 mb-5">
+          17の主要AIメディア・公式ブログから <strong>RSSフィード</strong> を使ってリアルタイムに記事を収集します。
+          過去<strong>3時間以内</strong>に公開された記事のみを対象にします。
+        </p>
+
+        <!-- カテゴリ別ソース -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+          <!-- 新ツール・サービス -->
+          <div class="bg-sky-50 border border-sky-100 rounded-xl p-4">
+            <p class="text-xs font-bold text-sky-700 mb-2">🆕 新ツール・サービス</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="feed-tag">OpenAI Blog</span>
+              <span class="feed-tag">Google AI Blog</span>
+              <span class="feed-tag">DeepMind</span>
+              <span class="feed-tag">Meta AI</span>
+              <span class="feed-tag">NVIDIA</span>
+              <span class="feed-tag">Microsoft AI</span>
+              <span class="feed-tag">AI News</span>
+            </div>
+          </div>
+          <!-- 研究・技術 -->
+          <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+            <p class="text-xs font-bold text-indigo-700 mb-2">🔬 研究・技術</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="feed-tag">Hugging Face</span>
+              <span class="feed-tag">ArXiv CS.AI</span>
+            </div>
+          </div>
+          <!-- ビジネス -->
+          <div class="bg-teal-50 border border-teal-100 rounded-xl p-4">
+            <p class="text-xs font-bold text-teal-700 mb-2">💼 ビジネス活用</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="feed-tag">TechCrunch AI</span>
+              <span class="feed-tag">VentureBeat AI</span>
+              <span class="feed-tag">The Verge AI</span>
+              <span class="feed-tag">Wired AI</span>
+            </div>
+          </div>
+          <!-- 規制・Cursor -->
+          <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
+            <p class="text-xs font-bold text-amber-700 mb-2">📋 規制・政策 ／ 🖥️ Cursor</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="feed-tag">MIT Tech Review</span>
+              <span class="feed-tag">Ars Technica</span>
+              <span class="feed-tag">Cursor Blog</span>
+              <span class="feed-tag">Cursor Changelog</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RSSとは？ -->
+        <div class="bg-blue-50 border-l-4 border-blue-400 rounded-r-xl p-4">
+          <p class="text-xs font-semibold text-blue-800 mb-1">💡 RSSフィードとは？</p>
+          <p class="text-xs text-blue-700 leading-relaxed">
+            ブログ・ニュースサイトが公開している「新着記事の一覧データ」。
+            タイトル・要約・URLが構造化されており、プログラムで自動取得できます。
+            メディアが更新するたびに自動で最新情報が流れてきます。
+          </p>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-2">
+          <span class="feed-tag">📰 17メディア</span>
+          <span class="feed-tag">⏱ 過去3時間以内の記事のみ</span>
+          <span class="feed-tag">🆓 無料で取得可能</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 矢印 -->
+    <div class="flow-connector py-1">
+      <div class="line"></div>
+      <div class="arrow text-slate-300">▼</div>
+    </div>
+
+    <!-- ===== PART 3: 処理する場所 ===== -->
+    <div class="fade-in part-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-orange-500 to-amber-500 p-5 text-white">
+        <div class="flex items-center gap-3">
+          <div class="step-badge bg-white/20 border border-white/30 text-white font-black">3</div>
+          <div>
+            <p class="text-orange-100 text-xs font-semibold uppercase tracking-wider">PART 3</p>
+            <h2 class="text-xl font-bold">処理する場所</h2>
+          </div>
+          <div class="ml-auto text-4xl">⚙️</div>
+        </div>
+        <p class="mt-2 text-orange-100 text-sm">「何をして、何を選ぶか」</p>
+      </div>
+
+      <div class="p-6">
+        <p class="text-sm text-slate-600 mb-6">
+          収集した記事をGitHub Actions上でNode.jsスクリプトが処理し、
+          <strong>Gemini AI</strong>が価値ある記事を3〜5件に絞り込んで日本語で要約します。
+        </p>
+
+        <!-- 処理フロー -->
+        <div class="space-y-3">
+          <!-- ステップA -->
+          <div class="flex gap-4 items-start">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-sm">A</div>
+            <div class="flex-1 bg-orange-50 border border-orange-100 rounded-xl p-4">
+              <p class="font-semibold text-orange-900 text-sm mb-1">📥 記事の収集（fetch-feeds.js）</p>
+              <p class="text-xs text-orange-700">17のRSSフィードをスキャンし、過去3時間以内の記事をカテゴリ別に整理。タイトル・要約・URLを抽出して一時ファイルに保存。</p>
+            </div>
+          </div>
+
+          <!-- 矢印 -->
+          <div class="flex justify-start pl-4 text-slate-300 text-sm">↓</div>
+
+          <!-- ステップB -->
+          <div class="flex gap-4 items-start">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-sm">B</div>
+            <div class="flex-1 bg-amber-50 border border-amber-100 rounded-xl p-4">
+              <p class="font-semibold text-amber-900 text-sm mb-1">🤖 Gemini AIで選定・要約（Gemini 2.5 Flash）</p>
+              <p class="text-xs text-amber-700 mb-2">収集した全記事をAIが分析。以下の基準で3〜5件を選んで日本語要約を作成：</p>
+              <div class="flex flex-wrap gap-1">
+                <span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">新モデル・新機能の発表</span>
+                <span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">重要なアップデート</span>
+                <span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">実践的なTips</span>
+                <span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">業界トレンド</span>
+              </div>
+              <p class="text-xs text-amber-600 mt-2">⚠️ 価値ある記事が0件の場合は送信をスキップ（LINE通知なし）</p>
+            </div>
+          </div>
+
+          <!-- 矢印 -->
+          <div class="flex justify-start pl-4 text-slate-300 text-sm">↓</div>
+
+          <!-- ステップC -->
+          <div class="flex gap-4 items-start">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-sm">C</div>
+            <div class="flex-1 bg-yellow-50 border border-yellow-100 rounded-xl p-4">
+              <p class="font-semibold text-yellow-900 text-sm mb-1">📝 メッセージ生成</p>
+              <p class="text-xs text-yellow-700">AIが生成した要約をLINE送信用テキストに整形。5000字を超える場合は自動的に複数メッセージに分割。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 実行環境 -->
+        <div class="mt-5 bg-slate-900 rounded-xl p-4 text-xs font-mono overflow-x-auto">
+          <div class="text-slate-500 mb-2">## 実行環境 (GitHub Actions)</div>
+          <div class="text-green-400">runs-on: <span class="text-white">ubuntu-latest</span></div>
+          <div class="text-green-400 mt-1">node-version: <span class="text-white">'20'</span></div>
+          <div class="text-slate-500 mt-2">## 使用API</div>
+          <div class="text-blue-300">Gemini 2.5 Flash <span class="text-slate-500">← Google AI Studio</span></div>
+          <div class="text-slate-500 mt-2">## 環境変数（GitHub Secrets）</div>
+          <div class="text-yellow-300">GEMINI_API_KEY</div>
+          <div class="text-yellow-300">LINE_CHANNEL_ACCESS_TOKEN</div>
+          <div class="text-yellow-300">LINE_USER_ID</div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2">
+          <span class="feed-tag">☁️ GitHub Actions（サーバーレス）</span>
+          <span class="feed-tag">🧠 Gemini 2.5 Flash</span>
+          <span class="feed-tag">📦 Node.js 20</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 矢印 -->
+    <div class="flow-connector py-1">
+      <div class="line"></div>
+      <div class="arrow text-slate-300">▼</div>
+    </div>
+
+    <!-- ===== PART 4: 届ける先 ===== -->
+    <div class="fade-in part-card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-5 text-white">
+        <div class="flex items-center gap-3">
+          <div class="step-badge bg-white/20 border border-white/30 text-white font-black">4</div>
+          <div>
+            <p class="text-green-100 text-xs font-semibold uppercase tracking-wider">PART 4</p>
+            <h2 class="text-xl font-bold">届ける先</h2>
+          </div>
+          <div class="ml-auto text-4xl">💬</div>
+        </div>
+        <p class="mt-2 text-green-100 text-sm">「誰に・どこに届けるか」</p>
+      </div>
+
+      <div class="p-6">
+        <p class="text-sm text-slate-600 mb-6">
+          <strong>LINE Messaging API</strong>を通じて、指定のLINEアカウントに直接プッシュ通知を送ります。
+        </p>
+
+        <!-- LINEメッセージプレビュー -->
+        <div class="bg-[#4c9b5f] rounded-2xl p-5 mb-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-xs">AI</div>
+            <span class="text-white font-semibold text-sm">AI Digest</span>
+            <span class="text-green-200 text-xs ml-auto">今</span>
+          </div>
+          <div class="line-bubble">
+            <p class="font-bold text-sm mb-1">🤖 AI Digest｜2026/05/09</p>
+            <div class="border-t border-slate-100 my-2"></div>
+            <p class="text-xs text-slate-500 font-bold mb-1">🆕 新ツール・サービス</p>
+            <p class="font-semibold text-sm">▶ GPT-5の安全対策を発表</p>
+            <p class="text-xs text-slate-600 mt-0.5">OpenAIが新モデルの安全性向上策を公開。ハルシネーション率が大幅低下。</p>
+            <p class="text-xs text-blue-500 mt-1">→ https://openai.com/blog/...</p>
+            <div class="border-t border-slate-100 my-2"></div>
+            <p class="text-xs text-slate-500 font-bold mb-1">💼 ビジネス活用</p>
+            <p class="font-semibold text-sm">▶ Cursor 1.0リリース — AI補完が3倍高速に</p>
+            <p class="text-xs text-slate-600 mt-0.5">コード補完エンジンを刷新。応答速度と精度が大幅向上。</p>
+            <p class="text-xs text-blue-500 mt-1">→ https://cursor.com/changelog/...</p>
+          </div>
+        </div>
+
+        <!-- 送信の仕組み -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div class="bg-green-50 border border-green-100 rounded-xl p-4">
+            <p class="font-semibold text-green-800 text-sm mb-2">📤 送信の仕組み</p>
+            <ul class="text-xs text-green-700 space-y-1.5">
+              <li class="flex items-start gap-1.5"><span>✓</span> LINE Messaging APIへHTTPS通信</li>
+              <li class="flex items-start gap-1.5"><span>✓</span> Channel Access Token で認証</li>
+              <li class="flex items-start gap-1.5"><span>✓</span> User ID指定でプッシュ通知</li>
+              <li class="flex items-start gap-1.5"><span>✓</span> 5000字超は自動分割して複数送信</li>
+            </ul>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="font-semibold text-slate-700 text-sm mb-2">🔕 送信しないケース</p>
+            <ul class="text-xs text-slate-600 space-y-1.5">
+              <li class="flex items-start gap-1.5"><span>—</span> 過去3時間に新着記事が0件</li>
+              <li class="flex items-start gap-1.5"><span>—</span> AIが全記事を「価値なし」と判断</li>
+            </ul>
+            <p class="text-xs text-slate-500 mt-2">→ 必要な情報だけが届く</p>
+          </div>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-2">
+          <span class="feed-tag">💚 LINE公式アカウント</span>
+          <span class="feed-tag">🔔 プッシュ通知</span>
+          <span class="feed-tag">🆓 月1000通まで無料</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 全体まとめ ===== -->
+    <div class="fade-in bg-slate-900 text-white rounded-2xl p-6 mt-8">
+      <h2 class="font-bold text-lg mb-4 text-center">⚡ 全体の流れ（まとめ）</h2>
+
+      <div class="flex flex-col gap-1">
+        <!-- 行 -->
+        <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+          <div class="w-7 h-7 rounded-lg bg-violet-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">1</div>
+          <div class="flex-1">
+            <span class="text-violet-300 text-xs font-semibold">トリガー</span>
+            <p class="text-sm text-white">GitHub Actionsが<strong>3時間おき</strong>に自動起動（またはボタンで手動）</p>
+          </div>
+          <span class="text-2xl">⏰</span>
+        </div>
+        <div class="text-slate-600 text-center text-lg">↓</div>
+        <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+          <div class="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">2</div>
+          <div class="flex-1">
+            <span class="text-sky-300 text-xs font-semibold">ソース元</span>
+            <p class="text-sm text-white"><strong>17メディアのRSS</strong>から過去3時間の新着記事を自動収集</p>
+          </div>
+          <span class="text-2xl">📡</span>
+        </div>
+        <div class="text-slate-600 text-center text-lg">↓</div>
+        <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+          <div class="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">3</div>
+          <div class="flex-1">
+            <span class="text-orange-300 text-xs font-semibold">処理する場所</span>
+            <p class="text-sm text-white"><strong>Gemini AI</strong>が価値ある記事を3〜5件に選定し、日本語で要約</p>
+          </div>
+          <span class="text-2xl">⚙️</span>
+        </div>
+        <div class="text-slate-600 text-center text-lg">↓</div>
+        <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+          <div class="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">4</div>
+          <div class="flex-1">
+            <span class="text-green-300 text-xs font-semibold">届ける先</span>
+            <p class="text-sm text-white"><strong>LINE</strong>にプッシュ通知。価値ある記事がなければ通知しない</p>
+          </div>
+          <span class="text-2xl">💬</span>
+        </div>
+      </div>
+
+      <!-- 使用コスト -->
+      <div class="mt-5 border-t border-white/10 pt-4">
+        <p class="text-xs text-slate-400 text-center mb-3">このツールにかかるコスト</p>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-white/5 rounded-xl p-3">
+            <div class="text-green-400 font-bold text-sm">無料</div>
+            <div class="text-slate-400 text-xs mt-0.5">GitHub Actions<br/>（パブリックリポジトリ）</div>
+          </div>
+          <div class="bg-white/5 rounded-xl p-3">
+            <div class="text-yellow-400 font-bold text-sm">有料</div>
+            <div class="text-slate-400 text-xs mt-0.5">Gemini API<br/>（従量課金）</div>
+          </div>
+          <div class="bg-white/5 rounded-xl p-3">
+            <div class="text-green-400 font-bold text-sm">無料</div>
+            <div class="text-slate-400 text-xs mt-0.5">LINE API<br/>（月1000通まで）</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-center text-slate-400 text-xs mt-5">
+        AI-Driven School の図解ツールで作成
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // タイムラインのレンダリング
+    const timeline = document.querySelector('.bg-violet-50.border.border-violet-100');
+    if (timeline) {
+      const times = [
+        ['00:00', true], ['03:00', false], ['06:00', false],
+        ['09:00', true], ['12:00', false], ['15:00', false],
+        ['18:00', true], ['21:00', false]
+      ];
+      const container = timeline.querySelector('.space-y-2');
+      if (container) {
+        container.innerHTML = times.map(([t, active]) => `
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full ${active ? 'bg-violet-500 pulse' : 'bg-violet-200'}"></div>
+            <span class="text-xs ${active ? 'font-bold text-violet-800' : 'text-violet-400'}">${t} JST</span>
+            ${active ? '<span class="text-xs text-violet-500 ml-1">⚡</span>' : ''}
+          </div>
+        `).join('');
+      }
+    }
+
+    // スクロールアニメーション
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
