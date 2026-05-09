@@ -356,6 +356,141 @@
           <span class="feed-tag">🧠 Gemini 2.5 Flash</span>
           <span class="feed-tag">📦 Node.js 20</span>
         </div>
+
+        <!-- ── 実際に操作した画面 ── -->
+        <div class="mt-6">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">🖥️ 実際に操作した画面</p>
+
+          <!-- Google AI Studio: APIキー作成 -->
+          <div class="mb-4">
+            <p class="text-xs text-slate-500 mb-2 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-orange-100 text-orange-600 text-xs flex items-center justify-center font-bold">1</span>
+              Google AI Studio — APIキーを発行
+            </p>
+            <!-- ブラウザ枠 -->
+            <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+              <!-- タブバー -->
+              <div class="bg-[#f1f3f4] px-3 py-2 flex items-center gap-2 border-b border-slate-200">
+                <div class="flex gap-1.5"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+                <div class="flex-1 bg-white rounded-full px-3 py-1 text-xs text-slate-500 border border-slate-200 font-mono truncate">aistudio.google.com/apikey</div>
+              </div>
+              <!-- 画面本体 -->
+              <div class="bg-white">
+                <!-- Googleナビ -->
+                <div class="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100">
+                  <div class="flex items-center gap-1">
+                    <span class="font-bold text-sm"><span class="text-blue-600">G</span><span class="text-red-500">o</span><span class="text-yellow-500">o</span><span class="text-blue-600">g</span><span class="text-green-600">l</span><span class="text-red-500">e</span></span>
+                    <span class="text-slate-400 text-xs ml-1">AI Studio</span>
+                  </div>
+                  <div class="ml-auto flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">T</div>
+                  </div>
+                </div>
+                <!-- サイドバー + コンテンツ -->
+                <div class="flex" style="min-height:180px;">
+                  <div class="w-36 bg-slate-50 border-r border-slate-100 p-3 flex-shrink-0">
+                    <div class="text-xs text-slate-400 mb-2 font-semibold">メニュー</div>
+                    <div class="space-y-1">
+                      <div class="text-xs text-slate-500 px-2 py-1 rounded hover:bg-slate-100 cursor-pointer">🏠 ホーム</div>
+                      <div class="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded font-semibold">🔑 APIキー</div>
+                      <div class="text-xs text-slate-500 px-2 py-1 rounded">📊 使用量</div>
+                    </div>
+                  </div>
+                  <div class="flex-1 p-4">
+                    <h3 class="font-bold text-slate-800 text-sm mb-1">APIキー</h3>
+                    <p class="text-xs text-slate-500 mb-3">AIモデルへのアクセスに使用するキーを管理します</p>
+                    <button class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold mb-3 flex items-center gap-1">
+                      <span>＋</span> APIキーを作成
+                    </button>
+                    <div class="border border-slate-200 rounded-lg overflow-hidden">
+                      <div class="bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 border-b border-slate-200 grid grid-cols-3">
+                        <span>名前</span><span>キー</span><span>作成日</span>
+                      </div>
+                      <div class="px-3 py-2.5 grid grid-cols-3 items-center">
+                        <span class="text-xs text-slate-700 font-medium">ai-digest-key</span>
+                        <span class="text-xs font-mono text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">AIza••••••••••••Xk9Q</span>
+                        <span class="text-xs text-slate-400">2026/04/10</span>
+                      </div>
+                    </div>
+                    <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                      <span class="text-amber-500 text-sm flex-shrink-0">⚠️</span>
+                      <p class="text-xs text-amber-700">このキーをGitHub Secretsに <code class="bg-amber-100 px-1 rounded font-mono">GEMINI_API_KEY</code> として登録します</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GitHub Actions: Secrets設定 -->
+          <div>
+            <p class="text-xs text-slate-500 mb-2 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-orange-100 text-orange-600 text-xs flex items-center justify-center font-bold">2</span>
+              GitHub — リポジトリのSecretsにAPIキーを保管
+            </p>
+            <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+              <div class="bg-[#f6f8fa] px-3 py-2 flex items-center gap-2 border-b border-slate-200">
+                <div class="flex gap-1.5"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+                <div class="flex-1 bg-white rounded-full px-3 py-1 text-xs text-slate-500 border border-slate-200 font-mono truncate">github.com/tmichelk/ai-digest-tool/settings/secrets/actions</div>
+              </div>
+              <div class="bg-white">
+                <!-- GitHubナビ -->
+                <div class="bg-[#24292f] px-4 py-2 flex items-center gap-3">
+                  <svg width="20" height="20" viewBox="0 0 16 16" fill="white"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                  <span class="text-white text-xs font-semibold">tmichelk / ai-digest-tool</span>
+                  <span class="ml-auto text-slate-400 text-xs">Settings</span>
+                </div>
+                <div class="p-4">
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="text-slate-700 font-bold text-sm">Actions secrets and variables</span>
+                  </div>
+                  <p class="text-xs text-slate-500 mb-3">シークレットは暗号化されて保存され、ワークフロー内でのみ参照できます</p>
+                  <!-- シークレット一覧 -->
+                  <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 border-b border-slate-200">Repository secrets</div>
+                    <div class="divide-y divide-slate-100">
+                      <div class="flex items-center justify-between px-3 py-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="text-slate-400">🔒</span>
+                          <span class="text-xs font-mono font-semibold text-slate-700">GEMINI_API_KEY</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs text-slate-400">Updated Apr 10</span>
+                          <button class="text-xs text-blue-600 border border-blue-200 px-2 py-0.5 rounded hover:bg-blue-50">更新</button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between px-3 py-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="text-slate-400">🔒</span>
+                          <span class="text-xs font-mono font-semibold text-slate-700">LINE_CHANNEL_ACCESS_TOKEN</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs text-slate-400">Updated Apr 10</span>
+                          <button class="text-xs text-blue-600 border border-blue-200 px-2 py-0.5 rounded hover:bg-blue-50">更新</button>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between px-3 py-2.5">
+                        <div class="flex items-center gap-2">
+                          <span class="text-slate-400">🔒</span>
+                          <span class="text-xs font-mono font-semibold text-slate-700">LINE_USER_ID</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs text-slate-400">Updated Apr 10</span>
+                          <button class="text-xs text-blue-600 border border-blue-200 px-2 py-0.5 rounded hover:bg-blue-50">更新</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-3 bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                    <span class="text-green-500 text-sm flex-shrink-0">✅</span>
+                    <p class="text-xs text-green-700">APIキーはここに保管し、コードに直接書かない。リポジトリを公開してもキーは外部から見えません</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -432,6 +567,145 @@
           <span class="feed-tag">🔔 プッシュ通知</span>
           <span class="feed-tag">🆓 月1000通まで無料</span>
         </div>
+
+        <!-- ── 実際に操作した画面 ── -->
+        <div class="mt-6">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">🖥️ 実際に操作した画面</p>
+
+          <!-- LINE Developers: チャンネル設定 -->
+          <div class="mb-4">
+            <p class="text-xs text-slate-500 mb-2 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-green-100 text-green-700 text-xs flex items-center justify-center font-bold">1</span>
+              LINE Developers — Messaging APIチャンネルを作成
+            </p>
+            <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+              <div class="bg-[#f1f3f4] px-3 py-2 flex items-center gap-2 border-b border-slate-200">
+                <div class="flex gap-1.5"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+                <div class="flex-1 bg-white rounded-full px-3 py-1 text-xs text-slate-500 border border-slate-200 font-mono truncate">developers.line.biz/console/channel/XXXXXXXX/messaging-api</div>
+              </div>
+              <div class="bg-white">
+                <!-- LINEナビ -->
+                <div class="bg-[#00b900] px-4 py-2.5 flex items-center gap-3">
+                  <span class="text-white font-black text-lg">LINE</span>
+                  <span class="text-green-200 text-xs">Developers</span>
+                  <div class="ml-auto flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold">T</div>
+                  </div>
+                </div>
+                <div class="flex" style="min-height:200px;">
+                  <!-- サイドバー -->
+                  <div class="w-40 bg-slate-50 border-r border-slate-100 p-3 flex-shrink-0">
+                    <div class="text-xs text-slate-400 mb-2 font-semibold">AI Digest Bot</div>
+                    <div class="space-y-0.5">
+                      <div class="text-xs text-slate-500 px-2 py-1.5 rounded hover:bg-slate-100">チャンネル基本設定</div>
+                      <div class="text-xs text-green-700 bg-green-50 px-2 py-1.5 rounded font-semibold border-l-2 border-green-500">Messaging API設定</div>
+                      <div class="text-xs text-slate-500 px-2 py-1.5 rounded">統計情報</div>
+                    </div>
+                  </div>
+                  <!-- コンテンツ -->
+                  <div class="flex-1 p-4 overflow-x-auto">
+                    <h3 class="font-bold text-slate-800 text-sm mb-3">Messaging API設定</h3>
+
+                    <!-- チャンネルアクセストークン -->
+                    <div class="border border-slate-200 rounded-lg p-3 mb-3">
+                      <p class="text-xs font-semibold text-slate-700 mb-2">チャンネルアクセストークン（長期）</p>
+                      <div class="bg-slate-50 border border-slate-200 rounded px-3 py-2 font-mono text-xs text-slate-500 mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                        qDXk5mN2pBY3rA••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+                      </div>
+                      <div class="flex gap-2">
+                        <button class="bg-[#00b900] text-white text-xs px-3 py-1 rounded font-semibold">発行</button>
+                        <button class="border border-slate-200 text-slate-600 text-xs px-3 py-1 rounded">コピー</button>
+                      </div>
+                    </div>
+
+                    <!-- Your user ID -->
+                    <div class="border border-slate-200 rounded-lg p-3">
+                      <p class="text-xs font-semibold text-slate-700 mb-1">あなたのユーザーID</p>
+                      <p class="text-xs text-slate-500 mb-2">このIDに宛ててメッセージを送信します</p>
+                      <div class="flex items-center gap-2">
+                        <span class="font-mono text-xs text-slate-700 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded">U1a2b3c4d5e6f7g8h9••••••</span>
+                        <button class="border border-slate-200 text-slate-600 text-xs px-3 py-1.5 rounded">コピー</button>
+                      </div>
+                    </div>
+
+                    <div class="mt-3 bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                      <span class="text-green-500 text-sm flex-shrink-0">✅</span>
+                      <p class="text-xs text-green-700">トークンとユーザーIDをGitHub Secretsに登録すれば接続完了</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GitHub Actions: Run workflow -->
+          <div>
+            <p class="text-xs text-slate-500 mb-2 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded bg-green-100 text-green-700 text-xs flex items-center justify-center font-bold">2</span>
+              GitHub Actions — ワークフローを手動実行して動作確認
+            </p>
+            <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+              <div class="bg-[#f6f8fa] px-3 py-2 flex items-center gap-2 border-b border-slate-200">
+                <div class="flex gap-1.5"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+                <div class="flex-1 bg-white rounded-full px-3 py-1 text-xs text-slate-500 border border-slate-200 font-mono truncate">github.com/tmichelk/ai-digest-tool/actions/workflows/daily-digest.yml</div>
+              </div>
+              <div class="bg-white">
+                <div class="bg-[#24292f] px-4 py-2 flex items-center gap-3">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="white"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                  <span class="text-white text-xs font-semibold">tmichelk / ai-digest-tool</span>
+                  <span class="text-slate-400 text-xs ml-2">Actions</span>
+                </div>
+                <div class="p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 class="font-bold text-slate-800 text-sm">AI Digest</h3>
+                      <p class="text-xs text-slate-500">schedule: 0 */3 * * * &nbsp;|&nbsp; workflow_dispatch</p>
+                    </div>
+                    <div class="relative">
+                      <button class="bg-[#2da44e] text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 shadow-sm">
+                        ▶ Run workflow
+                      </button>
+                    </div>
+                  </div>
+                  <!-- 実行ログ -->
+                  <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="bg-slate-50 px-3 py-2 text-xs text-slate-500 border-b border-slate-200">最近の実行</div>
+                    <div class="divide-y divide-slate-100">
+                      <div class="flex items-center gap-3 px-3 py-2.5">
+                        <span class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                          <svg width="8" height="8" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                        </span>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs font-semibold text-slate-700 truncate">Scheduled run — 3 articles sent to LINE</p>
+                          <p class="text-xs text-slate-400">main · 2026/05/09 09:03 · 1m 42s</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3 px-3 py-2.5">
+                        <span class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                          <svg width="8" height="8" viewBox="0 0 12 12" fill="white"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                        </span>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs font-semibold text-slate-700 truncate">Scheduled run — No notable articles, skipped</p>
+                          <p class="text-xs text-slate-400">main · 2026/05/09 06:03 · 58s</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3 px-3 py-2.5">
+                        <span class="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                          <svg width="8" height="8" viewBox="0 0 12 12" fill="white"><path d="M3 3l6 6M9 3l-6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                        </span>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs font-semibold text-slate-700 truncate">Scheduled run — Gemini API error 429</p>
+                          <p class="text-xs text-slate-400">main · 2026/04/28 09:03 · 32s</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
